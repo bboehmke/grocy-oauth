@@ -10,11 +10,11 @@ This was only tested against [authentik](https://goauthentik.io/) but it should 
 
 ## Installation & Configuration
 
-1. Copy the `OAuthMiddleware.php` to the Grocy root at `middleware/OAuthMiddleware.php`
+1. Copy the `OAuthMiddleware.php` to the Grocy root at `middleware/Auth/OAuthMiddleware.php`
 2. Configure a OAuth app in your OAuth provider
 3. Add the following settings to your `config.php` and adapt to your setup:
 ```php
-Setting('AUTH_CLASS', 'Grocy\Middleware\OAuthMiddleware');
+Setting('AUTH_CLASS', 'Grocy\Middleware\Auth\OAuthMiddleware');
 
 // Options when using OAuthMiddleware
 Setting('OAUTH_CLIENT_ID', '');
