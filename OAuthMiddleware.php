@@ -1,6 +1,6 @@
 <?php
 
-namespace Grocy\Middleware;
+namespace Grocy\Middleware\Auth;
 
 use DI\Container;
 use GuzzleHttp\Client;
@@ -14,7 +14,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 /**
  * minimalistic OAuth middleware
  */
-class OAuthMiddleware extends AuthMiddleware
+class OAuthMiddleware extends BaseAuthMiddleware
 {
 	private Client $client;
 
@@ -25,13 +25,13 @@ class OAuthMiddleware extends AuthMiddleware
 		$this->client = new Client(['timeout' => 2.0]);
 	}
 
-	public function authenticate(Request $request)
+	public function AuthenticateRequest(Request $request)
 	{
 		define('GROCY_EXTERNALLY_MANAGED_AUTHENTICATION', true);
 
 		// First try to authenticate by API key
 		$auth = new ApiKeyAuthMiddleware($this->AppContainer, $this->ResponseFactory);
-		$user = $auth->authenticate($request);
+		$user = $auth->AuthenticateRequest($request);
 		if ($user !== null)
 		{
 			return $user;
@@ -39,7 +39,7 @@ class OAuthMiddleware extends AuthMiddleware
 
 		// Then by session cookie
 		$auth = new SessionAuthMiddleware($this->AppContainer, $this->ResponseFactory);
-		$user = $auth->authenticate($request);
+		$user = $auth->AuthenticateRequest($request);
 		if ($user !== null)
 		{
 			return $user;
@@ -98,7 +98,8 @@ class OAuthMiddleware extends AuthMiddleware
 			$user = UsersService::getInstance()->CreateUser($infoResponseJson[GROCY_OAUTH_USERNAME_CLAIM], '', '', '');
 		}
 
-		self::SetSessionCookie(SessionService::getInstance()->CreateSession($user->id, false));
+		$token = SessionService::GetInstance()->CreateToken(SessionService::SESSION_TOKEN_TYPE_ACCESS, $user->id, GetClientUserAgent());
+		self::SetSessionCookie(SessionService::SESSION_TOKEN_TYPE_ACCESS, $token);
 
 		// last redirect to clean URL from OAuth parameters
 		http_response_code(302);
